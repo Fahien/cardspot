@@ -2,9 +2,16 @@
 
 #include <vector>
 
-namespace spot::card
+namespace spot
 {
 
+namespace gfx
+{
+class Graphics;
+}
+
+namespace card
+{
 
 class Card
 {
@@ -25,10 +32,18 @@ class Deck
 
 class Hand
 {
-	public:
+  public:
+	Hand( gfx::Graphics& g );
+
+	int32_t get_node() const noexcept { return node; }
+
+	void add_card( int32_t card );
+
+  private:
+	gfx::Graphics& gfx;
 
 	// Node of the hand
-	uint32_t node;
+	int32_t node = -1;
 
 	// Handles to cards
 	std::vector<uint32_t> cards;
@@ -38,10 +53,15 @@ class Hand
 class Player
 {
   public:
-	
+	Player( gfx::Graphics& g ) : gfx { g }, hand { g } {}
+
+	gfx::Graphics& gfx;
+
 	Deck deck;
 	Hand hand;
+	
 };
 
 
-} // namespace spot::card
+} // namespace card
+} // namespace spot

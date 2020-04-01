@@ -11,3 +11,6 @@ target_link_libraries( ${CMAKE_PROJECT_NAME} project-options gfxspot netspot Boo
 set( SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/main.cc
 )
+
+add_executable( game-${CMAKE_PROJECT_NAME} ${SOURCES} )
+target_link_libraries( game-${CMAKE_PROJECT_NAME} ${CMAKE_PROJECT_NAME} )

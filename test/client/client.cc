@@ -5,31 +5,13 @@
 #include <fmt/color.h>
 #include <fmt/format.h>
 
+#include "log.h"
+#include "message.h"
+
 #include <thread>
 
-void loge( const std::string& msg )
-{
-	static std::string fail = fmt::format( fmt::emphasis::bold | fmt::fg( fmt::color::red ), "FAIL" );
-	fmt::print( "[{}] {}\n", fail, msg );
-}
-
-void logi( const std::string& msg )
-{
-	static std::string ok = fmt::format( fmt::emphasis::bold | fmt::fg( fmt::color::green ), " OK " );
-	fmt::print( "[{}] {}\n", ok, msg );
-}
-
-enum class Command : uint8_t
-{
-	NOP,
-	LIST,
-};
-
-struct Message
-{
-	Command command;
-};
-
+#define BUF( buf ) ( asio::buffer( &buf, sizeof( buf ) ) )
+#define STR( arr ) ( std::string( std::begin( arr ), std::end( arr ) ) )
 
 namespace asio = boost::asio;
 
@@ -63,10 +45,10 @@ int main( int argc, const char** argv )
 
 	while ( true )
 	{
-		auto buf = boost::array<char, 128>();
+		auto message = Message();
 		boost::system::error_code error;
 		logi( "Reading" );
-		auto len = socket.read_some( asio::buffer( buf ), error );
+		auto len = socket.read_some( BUF( message ), error );
 		if ( error == asio::error::eof )
 		{
 			break; // connection closed
@@ -77,12 +59,25 @@ int main( int argc, const char** argv )
 			return EXIT_FAILURE;
 		}
 
-		fmt::print( "{}\n", std::string( buf.data(), len ) );
+		switch ( message.command )
+		{
+		case Command::HI:
+			log_down( fmt::format( "{} v{}", STR( message.u.hi.name ), message.version ) );
+			break;
+		case Command::STR:
+			log_down( STR( message.u.str ) );
+			return EXIT_SUCCESS;
+		default:
+			loge( "Command unknown" );
+			return EXIT_FAILURE;
+		}
 
-		logi( "Writing" );
+		std::this_thread::sleep_for( std::chrono::seconds( 1 ) );
+
+		log_up( "List" );
 		boost::system::error_code werror;
-		auto message = Message{ Command::NOP };
-		socket.write_some( asio::buffer( &message, sizeof( message ) ), werror );
+		message = Message{ Command::LIST };
+		socket.write_some( BUF( message ), werror );
 		if ( werror )
 		{
 			loge( fmt::format( "Write error: {}", error.message() ) );

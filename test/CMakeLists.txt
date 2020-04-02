@@ -5,6 +5,8 @@ function( add_proj_test TEST )
 endfunction()
 
 add_proj_test( asio )
-add_proj_test( daytime )
-add_proj_test( server )
 add_proj_test( curl )
+
+add_subdirectory( core )
+add_subdirectory( server )
+add_subdirectory( client )

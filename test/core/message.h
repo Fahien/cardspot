@@ -20,7 +20,7 @@ struct Message
 	Command command = Command::NOP;
 	uint16_t version = 0;
 	
-	struct Data
+	union Data
 	{
 		uint8_t data[28] = {};
 
@@ -33,3 +33,4 @@ struct Message
 	} u = {};
 };
 
+static_assert( sizeof( Message ) == 32 );

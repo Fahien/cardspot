@@ -21,3 +21,12 @@ Message Message::str( const std::string& str )
 	std::memcpy( m.u.str.data(), str.data(), str.size() );
 	return m;
 }
+
+
+Message Message::node( int32_t node )
+{
+	const uint16_t version = 1;
+	Message m { Command::NODE, version };
+	m.u.node = node;
+	return m;
+}

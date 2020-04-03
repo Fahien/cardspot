@@ -4,11 +4,16 @@
 
 #include <message.h>
 
+namespace spot::gfx
+{
+class Graphics;
+}
+
 
 class Connection : std::enable_shared_from_this<Connection>
 {
   public:
-	Connection( boost::asio::io_context& ctx,
+	Connection( spot::gfx::Graphics& gfx, boost::asio::io_context& ctx,
 		boost::asio::ip::tcp::resolver::results_type& endpoints );
 
 	void handle_read( const boost::system::error_code& error );
@@ -22,6 +27,7 @@ class Connection : std::enable_shared_from_this<Connection>
 	boost::asio::ip::tcp::socket& get_socket() { return socket; }
 
   private:
+	spot::gfx::Graphics& gfx;
 	boost::asio::ip::tcp::socket socket;
 	Message message;
 	Message response;

@@ -10,6 +10,9 @@
 #include "message.h"
 #include "connection.h"
 
+#include "spot/gfx/graphics.h"
+#include "board.h"
+
 
 #define BUF( buf ) ( asio::buffer( &buf, sizeof( buf ) ) )
 #define STR( arr ) ( std::string( std::begin( arr ), std::end( arr ) ) )
@@ -33,19 +36,51 @@ int main( int argc, const char** argv )
 	{
 		logi( fmt::format( "{} {} {}::{}", endpoint.host_name(), endpoint.service_name(), endpoint.endpoint().address().to_string(), endpoint.endpoint().port() ) );
 	}
+	auto gfx = spot::gfx::Graphics();
 
-	auto con = Connection( io, endpoints );
-	auto io_thread = std::thread( [&io] () { io.run(); } );
+	auto con = Connection( gfx, io, endpoints );
+	auto io_thread = std::thread( [&io](){ io.run(); } );
 
+	auto meshes = spot::gfx::SolidMeshes( gfx );
+	auto board = spot::gfx::create_board( gfx );
 
-	while ( true )
+	gfx.view = spot::gfx::look_at( spot::math::Vec3::Z, spot::math::Vec3::Zero, spot::math::Vec3::Y );
+
+	gfx.proj = spot::gfx::ortho(
+		spot::gfx::viewport.offset.x, spot::gfx::viewport.extent.x,
+		spot::gfx::viewport.offset.y, spot::gfx::viewport.extent.y,
+		0.125f, 2.0 );
+
+	while ( gfx.window.is_alive() )
 	{
-		std::this_thread::sleep_for( std::chrono::seconds( 1 ) );
-		log_up( "List" );
-		boost::system::error_code error;
-		auto message = Message{ Command::LIST };
-		con.send( message );
+		gfx.glfw.poll();
+
+		const auto dt = gfx.glfw.get_delta();
+		gfx.window.update( dt );
+
+		if ( gfx.window.click )
+		{
+			auto coords = gfx.window.cursor_to( spot::gfx::viewport );
+
+			for ( auto child : NODE( board )->get_children() )
+			{
+				if ( child->contains( coords ) )
+				{
+					// Tell the server to interact with this node
+					con.send( Message::node( child->index ) );
+				}
+			}
+		}
+	
+		if ( gfx.render_begin() )
+		{
+			gfx.draw( board );
+			gfx.render_end();
+		}
 	}
 
+	/// @todo Is detaching the right approach?
+	io_thread.detach();
+	gfx.device.wait_idle();
 	return EXIT_SUCCESS;
 }

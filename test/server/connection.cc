@@ -10,6 +10,7 @@
 namespace asio = boost::asio;
 namespace ptime = boost::posix_time;
 
+void nop() {}
 
 Connection::Connection( Server& srv )
 : server { srv }
@@ -43,6 +44,15 @@ void Connection::handle_read( const boost::system::error_code& error )
 		message = Message::str( list );
 		asio::async_write( socket, BUF( message ),
 			std::bind( &Connection::handle_write, this ) );
+	}
+	else if ( response.command == Command::NODE )
+	{
+		logi( "Broadcasting node" );
+		for ( auto& cons : server.get_connections() )
+		{
+			asio::async_write( cons->get_socket(), BUF( response ), std::bind( nop ) );
+		}
+		handle_write();
 	}
 	else if ( response.command == Command::NOP )
 	{

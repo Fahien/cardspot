@@ -3,6 +3,7 @@
 #include <message.h>
 #include <fmt/color.h>
 #include <fmt/format.h>
+#include <spot/gfx/graphics.h>
 
 #include <log.h>
 
@@ -14,8 +15,9 @@ namespace asio = boost::asio;
 namespace ptime = boost::posix_time;
 
 
-Connection::Connection( asio::io_context& ctx, asio::ip::tcp::resolver::results_type& endpoints )
-: socket { ctx }
+Connection::Connection( spot::gfx::Graphics& g, asio::io_context& ctx, asio::ip::tcp::resolver::results_type& endpoints )
+: gfx { g }
+, socket { ctx }
 {
 	logi( "Connecting" );
 	asio::connect( socket, endpoints );
@@ -46,6 +48,13 @@ void Connection::handle_read( const boost::system::error_code& error )
 		break;
 	case Command::STR:
 		log_down( STR( response.u.str ) );
+		break;
+	case Command::NODE:
+		log_down( fmt::format( "Clicked {}", response.u.node ) );
+		if ( auto node = gfx.models.get_node( response.u.node ) )
+		{
+			node->mesh = ( node->mesh + 1 ) % 5;
+		}
 		break;
 	default:
 		loge( "Command unknown" );

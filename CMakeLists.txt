@@ -10,18 +10,26 @@ project( cardspot
 
 # Conan
 # Download automatically, you can also just copy the conan.cmake file
-if( NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake" )
+if( NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/conan.cmake" )
 	message( STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan" )
 	file( DOWNLOAD "https://github.com/conan-io/cmake-conan/raw/v0.15/conan.cmake"
-		"${CMAKE_BINARY_DIR}/conan.cmake" )
+		"${CMAKE_CURRENT_BINARY_DIR}/conan.cmake" )
 endif()
 
-include( ${CMAKE_BINARY_DIR}/conan.cmake )
+include( ${CMAKE_CURRENT_BINARY_DIR}/conan.cmake )
+
+if ( NOT TARGET CONAN_PKG::fmt )
+	conan_cmake_run( REQUIRES fmt/6.1.2 BASIC_SETUP CMAKE_TARGETS BUILD missing )
+endif()
 
 conan_cmake_run(
-	REQUIRES fmt/6.1.2
+	REQUIRES
+		libcurl/7.69.1
+		boost/1.72.0
 	BASIC_SETUP CMAKE_TARGETS
 	BUILD missing )
+
+message( STATUS "${CONAN_LIBS}" )
 
 
 # Link this 'library' to set the c++ standard / compile-time options requested
@@ -29,9 +37,6 @@ add_library( project-options INTERFACE )
 target_compile_features( project-options INTERFACE cxx_std_17 )
 
 include( AddGfxSpot )
-find_package( Boost REQUIRED system )
-find_package( PkgConfig REQUIRED )
-find_package( CURL REQUIRED )
 
 add_subdirectory( src )
 add_subdirectory( test )

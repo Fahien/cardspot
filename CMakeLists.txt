@@ -1,7 +1,7 @@
 cmake_minimum_required( VERSION 3.15 )
 
 # Dep
-list( APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../cmake )
+list( APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake )
 
 # Set the project name to your project name, my project isn't very descriptive
 project( cardspot C CXX )

@@ -11,19 +11,20 @@ jobs:
           path: card
       - uses: actions/checkout@v2
         with:
-          name: gfx
           repository: fahien/gfxspot
           path: gfx
       - uses: actions/checkout@v2
         with:
-          name: gltf
           repository: fahien/gltfspot
           path: gltf
       - uses: actions/checkout@v2
         with:
-          name: math
           repository: fahien/mathspot
           path: math
+      - uses: actions/checkout@v2
+        with:
+          repository: fahien/filespot
+          path: file
 
       - name: dep
         run: |

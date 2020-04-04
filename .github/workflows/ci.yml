@@ -6,22 +6,34 @@ jobs:
     name: build
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v2
+        with:
+          path: card
+      - uses: actions/checkout@v2
         with:
           name: gfx
           repository: fahien/gfxspot
-      - uses: actions/checkout@master
+          path: gfx
+      - uses: actions/checkout@v2
         with:
           name: gltf
           repository: fahien/gltfspot
-      - uses: actions/checkout@master
+          path: gltf
+      - uses: actions/checkout@v2
         with:
           name: math
           repository: fahien/mathspot
+          path: math
+
+      - name: dep
+        run: |
+            pip install conan
+            Invoke-WebRequest -Uri "https://sdk.lunarg.com/sdk/download/latest/windows/vulkan-sdk.exe" -OutFile vulkan-sdk.exe
+            $installer = Start-Process -FilePath vulkan-sdk.exe -Wait -PassThru -ArgumentList @("/S");
+            $installer.WaitForExit();
 
       - name: gen
-        run: cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release
+        run: cmake -Scard -Bbuild -DCMAKE_BUILD_TYPE=Release
 
       - name: build
-        run: cmake --build build -- -j4
+        run: cmake --build build --config Release --parallel

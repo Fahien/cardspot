@@ -11,6 +11,14 @@ jobs:
         with:
           name: gfx
           repository: fahien/gfxspot
+      - uses: actions/checkout@master
+        with:
+          name: gltf
+          repository: fahien/gltfspot
+      - uses: actions/checkout@master
+        with:
+          name: math
+          repository: fahien/mathspot
 
       - name: gen
         run: cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release

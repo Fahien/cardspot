@@ -32,11 +32,13 @@ jobs:
       - name: vulkan
         run: |
           Invoke-WebRequest -Uri "https://sdk.lunarg.com/sdk/download/latest/windows/vulkan-sdk.exe" -OutFile vulkan-sdk.exe
-          $installer = Start-Process -FilePath vulkan-sdk.exe -Wait -PassThru -ArgumentList @("/S");
-          $installer.WaitForExit();
+          7z x ./vulkan-sdk.exe -ovulkan-sdk
 
       - name: gen
-        run: cmake -Scard -Bbuild -DCMAKE_BUILD_TYPE=Release
+        run: |
+          $env:VULKAN_SDK="$pwd\vulkan-sdk"
+          $env:Path+=";$env:VULKAN_SDK\Bin"
+          cmake -Scard -Bbuild -DCMAKE_BUILD_TYPE=Release
 
       - name: build
         run: cmake --build build --config Release --parallel

@@ -18,7 +18,7 @@ endif()
 
 include( ${CMAKE_CURRENT_BINARY_DIR}/conan.cmake )
 
-conan_cmake_run( REQUIRES fmt/6.1.2 libcurl/7.69.1 boost/1.72.0 BASIC_SETUP BUILD missing )
+conan_cmake_run( CONANFILE conanfile.txt BASIC_SETUP CMAKE_TARGETS BUILD missing )
 
 # Link this 'library' to set the c++ standard / compile-time options requested
 add_library( project-options INTERFACE )

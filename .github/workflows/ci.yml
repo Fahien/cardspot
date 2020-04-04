@@ -42,3 +42,9 @@ jobs:
 
       - name: build
         run: cmake --build build --config Release --target client-cardspot --target shaders --parallel
+
+      - name: deploy
+        uses: actions/upload-artifact@v1
+        with:
+          name: client
+          path: build

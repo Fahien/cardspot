@@ -22,20 +22,20 @@ namespace asio = boost::asio;
 
 int main( int argc, const char** argv )
 {
-	if ( argc != 2 )
+	if ( argc != 3 )
 	{
-		loge( fmt::format( "Usage: {} <host>", argv[0] ) );
+		loge( fmt::format( "Usage: {} <host> <port>", argv[0] ) );
 		return EXIT_FAILURE;
 	}
 
 	auto io = asio::io_context();
 	auto resolver = asio::ip::tcp::resolver( io );
-	auto endpoints = resolver.resolve( argv[1], "daytime" );
-
+	auto endpoints = resolver.resolve( argv[1], argv[2] );
 	for ( auto& endpoint : endpoints )
 	{
 		logi( fmt::format( "{} {} {}::{}", endpoint.host_name(), endpoint.service_name(), endpoint.endpoint().address().to_string(), endpoint.endpoint().port() ) );
 	}
+
 	auto gfx = spot::gfx::Graphics();
 
 	auto con = Connection( gfx, io, endpoints );

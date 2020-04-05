@@ -37,6 +37,7 @@ int main( int argc, const char** argv )
 	}
 
 	auto gfx = spot::gfx::Graphics();
+	logi( "Graphics initialized" );
 
 	auto con = Connection( gfx, io, endpoints );
 	auto io_thread = std::thread( [&io](){ io.run(); } );

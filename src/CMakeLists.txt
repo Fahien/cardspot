@@ -1,3 +1,4 @@
+add_subdirectory( core )
 add_subdirectory( net )
 
 set( LIB_SOURCES
@@ -6,7 +7,7 @@ set( LIB_SOURCES
 
 add_library( ${CMAKE_PROJECT_NAME} ${LIB_SOURCES} )
 target_include_directories( ${CMAKE_PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include )
-target_link_libraries( ${CMAKE_PROJECT_NAME} project-options gfxspot netspot )
+target_link_libraries( ${CMAKE_PROJECT_NAME} project-options gfxspot netspot corespot )
 
 set( SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/main.cc

@@ -1,4 +1,4 @@
-#include "message.h"
+#include "spot/net/message.h"
 
 #include <cassert>
 

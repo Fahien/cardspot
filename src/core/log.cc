@@ -1,4 +1,4 @@
-#include "log.h"
+#include "spot/core/log.h"
 
 #include <fmt/color.h>
 #include <fmt/format.h>

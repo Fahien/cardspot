@@ -2,6 +2,7 @@
 
 #include <spot/gfx/graphics.h>
 #include "spot/card/card.h"
+#include "spot/core/log.h"
 
 namespace spot
 {
@@ -38,7 +39,7 @@ int main()
 	);
 	player.hand.add_card( gfx.models.create_node().index );
 
-	gfx.view = gfx::look_at( math::Vec3::Z * 8.0f, math::Vec3::Zero, math::Vec3::Y );
+	gfx.camera.look_at( math::Vec3::Z * 8.0f, math::Vec3::Zero, math::Vec3::Y );
 
 	while ( gfx.window.is_alive() )
 	{
@@ -47,8 +48,9 @@ int main()
 		const auto dt = gfx.glfw.get_delta();
 		gfx.window.update( dt );
 
-		if ( gfx.window.click )
+		if ( gfx.window.click.right )
 		{
+			// Add a new card to the hand
 			auto& node = gfx.models.create_node();
 			node.mesh = player.deck.cards[0].mesh;
 
@@ -59,6 +61,14 @@ int main()
 
 			hand->translation.x -= hand->children.size() ? 0.5f : 0.0f;
 			hand->children.emplace_back( node.index );
+		}
+
+		if ( gfx.window.click.left )
+		{
+			/// @todo Try selecting a card
+			/// @todo Fix this call, as it does not work for perspective camera, I guess
+			auto coords = gfx.window.cursor_to( gfx.viewport.abstract );
+			logi( "Click [" + std::to_string( coords.x ) + "," + std::to_string( coords.y ) + "]" );
 		}
 
 		if ( gfx.render_begin() )

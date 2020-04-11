@@ -25,7 +25,7 @@ Hand::Hand( gfx::Graphics& g, Deck& d )
 void Hand::add_card( const Card& card )
 {
 	auto hand = gfx.models.get_node( node );
-	hand->children.emplace_back( card.node );
+	hand->add_child( *gfx.models.get_node( card.node ) );
 	cards.emplace_back( card.index );
 }
 

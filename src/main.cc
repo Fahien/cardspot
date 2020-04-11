@@ -1,11 +1,13 @@
 #include <cstdlib>
 
+#include <fmt/format.h>
 #include <spot/gfx/graphics.h>
 #include "spot/card/card.h"
 #include "spot/core/log.h"
 
 #define NODE( index ) ( gfx.models.get_node( index ) )
-#define BOUNDS( index ) ( gfx.models.gltf.get_bounds( index ) )
+#define BOUNDS( bounds_index ) ( gfx.models.gltf.get_bounds( bounds_index ) )
+#define SHAPE( bounds_index ) ( gfx.models.gltf.get_shape( bounds_index ) )
 
 namespace spot
 {
@@ -13,6 +15,7 @@ namespace spot
 const math::Vec2 card_size = { 2.5f, 3.5f };
 const math::Vec2 card_offset = { -card_size.x / 2.0f, -card_size.y / 2.0f };
 const math::Vec2 card_b = { card_size.x / 2.0f, card_size.y / 2.0f };
+const math::Rect card_rect = { card_offset, card_b };
 
 
 card::Card create_card( const char* image, gfx::Graphics& gfx )
@@ -28,15 +31,15 @@ card::Card create_card( const char* image, gfx::Graphics& gfx )
 	gfx.models.meshes.emplace_back(
 		gfx::Mesh::create_quad(
 			material.index,
-			math::Vec3( -card_size.x / 2.0f, -card_size.y / 2.0f, 0.0f ),
-			math::Vec3( card_size.x / 2.0f, card_size.y / 2.0f, 0.0f )
+			math::Vec3( card_offset.x, card_offset.y, 0.0f ),
+			math::Vec3( card_b.x, card_b.y, 0.0f )
 		)
 	);
 
-	/// @todo Add node bounds
-	/// Shapes should be math::Things with their intersect functions
-	/// Collisions should be tested by an update function
+	// Add node bounds
 	auto& rect = gfx.models.gltf.rects.emplace_back( gltf::Rect( card_offset, card_b ) );
+	rect.model = &gfx.models.gltf;
+	rect.node = ret.node;
 	rect.index = gfx.models.gltf.rects.size() - 1;
 
 	auto& bounds = gfx.models.gltf.bounds.emplace_back();
@@ -68,6 +71,17 @@ int main()
 	gfx.viewport.set_offset( -8.0f, -8.0f );
 	gfx.viewport.set_extent( 16.0f, 16.0f );
 
+	int32_t selected_index = -1;
+	{
+		auto& selected_node = gfx.models.create_node();
+		selected_node.name = "Selection";
+		auto& rect_mesh = gfx.models.create_mesh(
+			gfx::Mesh::create_rect( card_rect, gfx::Color::red )
+		);
+		selected_node.mesh = rect_mesh.index;
+		selected_index = selected_node.index;
+	}
+
 	while ( gfx.window.is_alive() )
 	{
 		gfx.glfw.poll();
@@ -82,18 +96,20 @@ int main()
 				create_card( "img/card.png", gfx )
 			);
 
+			player.hand.add_card( new_card );
+
 			auto hand = NODE( player.hand.get_node() );
 			auto node = NODE( new_card.node );
-
-			node->translation.x += hand->children.size() * 1.0f;
-			node->translation.z += hand->children.size() * 0.005f;
-
-			hand->translation.x -= hand->children.size() ? 0.5f : 0.0f;
 		}
 
 		if ( gfx.window.click.left )
 		{
-			/// @todo Try selecting a card
+			if ( auto selected_node = NODE( selected_index ) )
+			{
+				selected_node->remove_from_parent();
+			}
+
+			// Select a card
 			/// @todo Fix this call, as it does not work for perspective camera, I guess
 			auto coords = gfx.window.cursor_to( gfx.viewport.get_abstract() );
 			logi( "Click [" + std::to_string( coords.x ) + "," + std::to_string( coords.y ) + "]" );
@@ -101,13 +117,26 @@ int main()
 			for ( auto card : player.hand.get_cards() )
 			{
 				auto node = NODE( card->node );
-				if ( auto bounds = BOUNDS( node->bounds ) )
+				if ( auto shape = SHAPE( node->bounds ) )
 				{
-					if ( bounds->contains( coords ) )
+					if ( shape->contains( coords ) )
 					{
 						logi( "Clicked on card" );
+						auto selected_node = NODE( selected_index );
+						selected_node->remove_from_parent();
+						node->add_child( *selected_node );
 					}
 				}
+			}
+		}
+
+		if ( auto selected = NODE( selected_index ) )
+		{
+			auto ratio = gfx.viewport.win_ratio();
+			auto trans = gfx.window.swipe * ratio;
+			if ( auto parent = selected->get_parent() )
+			{
+				parent->translation += trans;
 			}
 		}
 

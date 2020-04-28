@@ -1,71 +1,62 @@
 #pragma once
 
 #include <vector>
+#include <spot/gltf/handle.h>
 
 namespace spot
 {
 
 namespace gfx
 {
-class Graphics;
+class Gltf;
+class Node;
 }
 
 namespace card
 {
 
-class Card
+class Card : public gfx::Handled<Card>
 {
   public:
 
-	/// Index of this card in the deck
-	int32_t index = -1;
-
 	/// Graphics node of this card
-	int32_t node = -1;
+	gfx::Handle<gfx::Node> node = {};
 };
 
 
 class Deck
 {
   public:
-	Card& add_card( Card&& c );
-
-	const std::vector<Card>& get_cards() const { return cards; }
-
-  private:
-	std::vector<Card> cards;
+	gfx::Uvec<Card> cards;
 };
 
 
 class Hand
 {
   public:
-	Hand( gfx::Graphics& g, Deck& d );
+	Hand( const gfx::Handle<gfx::Gltf>& model, Deck& d );
 
-	int32_t get_node() const noexcept { return node; }
+	const gfx::Handle<gfx::Node>& get_node() const noexcept { return node; }
 
-	void add_card( const Card& card );
+	void add_card( const gfx::Handle<Card>& card );
 
-	std::vector<const Card*> get_cards() const;
+	const std::vector<gfx::Handle<Card>>& get_cards() const { return cards; };
 
   private:
-	gfx::Graphics& gfx;
 	Deck& deck;
 
 	// Node of the hand
-	int32_t node = -1;
+	gfx::Handle<gfx::Node> node = {};
 
 	// Vector of indices to @ref Cards
-	std::vector<int32_t> cards;
+	std::vector<gfx::Handle<Card>> cards;
 };
 
 
 class Player
 {
   public:
-	Player( gfx::Graphics& g ) : gfx { g }, hand { g, deck } {}
-
-	gfx::Graphics& gfx;
+	Player( const gfx::Handle<gfx::Gltf>& model ) : hand { model, deck } {}
 
 	Deck deck;
 	Hand hand;

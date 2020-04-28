@@ -7,6 +7,20 @@ namespace spot::card
 {
 
 
+void Card::flip()
+{
+	if ( shown )
+	{
+		hide_anim->state = gfx::Animation::State::Play;
+	}
+	else
+	{
+		show_anim->state = gfx::Animation::State::Play;
+	}
+	shown = !shown;
+}
+
+
 Hand::Hand( const gfx::Handle<gfx::Gltf>& model, Deck& d )
 : deck { d }
 , node { model->nodes.push() }

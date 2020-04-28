@@ -10,6 +10,7 @@ namespace gfx
 {
 class Gltf;
 class Node;
+class Animation;
 }
 
 namespace card
@@ -21,6 +22,14 @@ class Card : public gfx::Handled<Card>
 
 	/// Graphics node of this card
 	gfx::Handle<gfx::Node> node = {};
+
+	/// Rotate animations
+	gfx::Handle<gfx::Animation> hide_anim = {};
+	gfx::Handle<gfx::Animation> show_anim = {};
+
+	void flip();
+
+	bool shown = true;
 };
 
 

@@ -18,6 +18,14 @@ card::Card create_card( const char* image, const gfx::Handle<gfx::Gltf>& model )
 {
 	card::Card ret;
 	ret.node = model->nodes.push();
+	ret.show_anim = model->animations.push( gfx::Animation( model ) );
+	ret.show_anim->state = gfx::Animation::State::Stop;
+	ret.show_anim->add_rotation( ret.node, 0.5f,
+		math::Quat( math::Vec3::Y, math::radians( 180.0f ) ),
+		math::Quat( math::Vec3::Y, math::radians( 360.0f ) ) );
+	ret.hide_anim = model->animations.push( gfx::Animation( model ) );
+	ret.hide_anim->state = gfx::Animation::State::Stop;
+	ret.hide_anim->add_rotation( ret.node, 0.5f, math::Quat( math::Vec3::Y, math::radians( 180.0f ) ) );
 
 	auto view = model->images->load( image );
 	auto material = model->materials.push( gfx::Material( view ) );
@@ -56,8 +64,8 @@ int main()
 	player.hand.add_card( first_card );
 
 	gfx.camera.look_at( math::Vec3::Z, math::Vec3::Zero, math::Vec3::Y );
-	gfx.viewport.set_offset( -8.0f, -8.0f );
-	gfx.viewport.set_extent( 16.0f, 16.0f );
+	gfx.viewport.set_offset( -4.0f, -4.0f );
+	gfx.viewport.set_extent( 8.0f, 8.0f );
 
 	gfx::Handle<gfx::Node> selected = model->nodes.push();
 	selected->name = "Selection";
@@ -72,20 +80,11 @@ int main()
 
 		const auto dt = gfx.glfw.get_delta();
 		gfx.window.update( dt );
+		gfx.animations.update( dt, model );
 
-		if ( gfx.window.click.right )
+		if ( gfx.window.click.left || gfx.window.click.right )
 		{
-			// Add a new card to the hand
-			auto new_card = player.deck.cards.push(
-				create_card( "img/card.png", model )
-			);
-
-			player.hand.add_card( new_card );
-		}
-
-		if ( gfx.window.click.left )
-		{
-			if ( selected )
+			if ( gfx.window.click.left && selected )
 			{
 				selected->remove_from_parent();
 			}
@@ -102,9 +101,16 @@ int main()
 					auto& shape = card->node->bounds->get_shape();
 					if ( shape.contains( coords ) )
 					{
-						logi( "Clicked on card" );
-						selected->remove_from_parent();
-						card->node->add_child( selected );
+						if ( gfx.window.click.left )
+						{
+							logi( "Selected card" );
+							card->node->add_child( selected );
+						}
+						else if ( gfx.window.click.right )
+						{
+							logi( "Rotating card" );
+							card->flip();
+						}
 					}
 				}
 			}

@@ -11,6 +11,7 @@ namespace gfx
 class Gltf;
 class Node;
 class Animation;
+class Mesh;
 }
 
 namespace card
@@ -19,6 +20,14 @@ namespace card
 class Card : public gfx::Handled<Card>
 {
   public:
+	/// @brief Create a new card instance
+	/// @param model Model the card belongs to
+	/// @param image_path Image of the card
+	/// @param back Back face of the card
+	Card(
+		const gfx::Handle<gfx::Gltf>& model,
+		const std::string& image_path,
+		const gfx::Handle<gfx::Mesh>& back );
 
 	/// Graphics node of this card
 	gfx::Handle<gfx::Node> node = {};
@@ -65,7 +74,10 @@ class Hand
 class Player
 {
   public:
-	Player( const gfx::Handle<gfx::Gltf>& model ) : hand { model, deck } {}
+	Player( const gfx::Handle<gfx::Gltf>& model );
+
+	/// Back of the cards
+	gfx::Handle<gfx::Mesh> back = {};
 
 	Deck deck;
 	Hand hand;

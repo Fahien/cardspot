@@ -14,39 +14,6 @@ const math::Vec2 card_b = { card_size.x / 2.0f, card_size.y / 2.0f };
 const math::Rect card_rect = { card_offset, card_b };
 
 
-card::Card create_card( const char* image, const gfx::Handle<gfx::Gltf>& model )
-{
-	card::Card ret;
-	ret.node = model->nodes.push();
-	ret.show_anim = model->animations.push( gfx::Animation( model ) );
-	ret.show_anim->state = gfx::Animation::State::Stop;
-	ret.show_anim->add_rotation( ret.node, 0.5f,
-		math::Quat( math::Vec3::Y, math::radians( 180.0f ) ),
-		math::Quat( math::Vec3::Y, math::radians( 360.0f ) ) );
-	ret.hide_anim = model->animations.push( gfx::Animation( model ) );
-	ret.hide_anim->state = gfx::Animation::State::Stop;
-	ret.hide_anim->add_rotation( ret.node, 0.5f, math::Quat( math::Vec3::Y, math::radians( 180.0f ) ) );
-
-	auto view = model->images->load( image );
-	auto material = model->materials.push( gfx::Material( view ) );
-	ret.node->mesh = model->meshes.push(
-		gfx::Mesh::create_quad(
-			material,
-			math::Vec3( card_offset.x, card_offset.y, 0.0f ),
-			math::Vec3( card_b.x, card_b.y, 0.0f )
-		)
-	);
-
-	// Add node bounds
-	auto rect = model->rects.push( gfx::Rect( card_offset, card_b ) );
-	rect->node = ret.node;
-
-	ret.node->bounds = model->bounds.push();
-	ret.node->bounds->shape = rect;
-
-	return ret;
-}
-
 }  //namespace spot
 
 int main()
@@ -58,7 +25,7 @@ int main()
 
 	auto player = card::Player( model );
 	auto first_card = player.deck.cards.push(
-		create_card( "img/card.png", model )
+		card::Card( model, "img/card.png", player.back )
 	);
 
 	player.hand.add_card( first_card );

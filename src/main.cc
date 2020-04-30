@@ -49,6 +49,14 @@ int main()
 		gfx.window.update( dt );
 		gfx.animations.update( dt, model );
 
+		if ( gfx.window.click.middle )
+		{
+			player.hand.add_card( player.deck.cards.push(
+				card::Card( model, "img/card.png", player.back )
+			) );
+			logi( "Adding card" );
+		}
+
 		if ( gfx.window.click.left || gfx.window.click.right )
 		{
 			if ( gfx.window.click.left && selected )
@@ -72,6 +80,7 @@ int main()
 						{
 							logi( "Selected card" );
 							card->node->add_child( selected );
+							break;
 						}
 						else if ( gfx.window.click.right )
 						{

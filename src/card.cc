@@ -1,5 +1,7 @@
 #include <spot/card/card.h>
 
+#include <fmt/format.h>
+#include "spot/core/log.h"
 #include <spot/gfx/graphics.h>
 
 
@@ -64,17 +66,38 @@ void Card::flip()
 }
 
 
-Hand::Hand( const gfx::Handle<gfx::Gltf>& model, Deck& d )
-: deck { d }
+Hand::Hand( const gfx::Handle<gfx::Gltf>& m, Deck& d )
+: model { m }
+, deck { d }
 , node { model->nodes.push() }
 {
 }
 
 
+void Hand::organize_positions()
+{
+	auto size = cards.size();
+
+	for ( size_t i = 0; i < size; ++i )
+	{
+		// When there is one card left and right are the same node
+		auto& pos = node->get_children()[i];
+		pos->get_children()[0]->translation = math::Vec3::Zero;
+		pos->translation.x = i * card_size.x / 4.0f;
+		pos->translation.z = i * card_size.y / 256.0f;
+	}
+
+	node->translation.x = -( (size - 1) * card_size.x / 8.0f );
+}
+
+
 void Hand::add_card( const gfx::Handle<Card>& card )
 {
-	node->add_child( card->node );
+	auto pos = model->nodes.push();
+	node->add_child( pos );
+	pos->add_child( card->node );
 	cards.emplace_back( card );
+	organize_positions();
 }
 
 

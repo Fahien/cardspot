@@ -61,9 +61,13 @@ class Hand
 	const std::vector<gfx::Handle<Card>>& get_cards() const { return cards; };
 
   private:
+	void organize_positions();
+
+	gfx::Handle<gfx::Gltf> model = {};
+
 	Deck& deck;
 
-	// Node of the hand
+	/// The node of the hand will have empty children nodes to hold cards like a fan
 	gfx::Handle<gfx::Node> node = {};
 
 	// Vector of indices to @ref Cards
